@@ -1,0 +1,23 @@
+{
+  "name": "job-theory-map",
+  "description": "",
+  "main": "index.js",
+  "authors": [
+    "hikaruright"
+  ],
+  "license": "ISC",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "public/bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "^3.4.1",
+    "bootstrap": "^4.3.1"
+  }
+}

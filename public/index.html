@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Map</title>
+    <script type="text/javascript" src="./bower_components/jquery/dist/jquery.min.js"></script>
+
+    <style>
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+canvas {
+    margin-top: 0px;
+    margin-left: 0px;
+    margin-bottom: 0px;
+    margin-right: 0px;
+}
+
+.wrapper {
+    width: 100%;
+    height: 100%;
+}
+
+#floating-area {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+.floating-box {
+    position: absolute;
+    top:100px;
+    left:100px;
+    max-width: 200px;
+    height: auto;
+    word-break: break-all;
+    word-wrap: break-word;
+    border: solid 2px gray;
+    background-color: burlywood;
+    padding: 6px;
+
+    cursor: pointer;
+	-webkit-user-select: none;
+	   -moz-user-select: none;
+	    -ms-user-select: none;
+	        user-select: none;
+}
+
+</style>
+
+</head>
+<body>
+<script>
+
+var dragging = null;
+
+/**
+ * On Loaded Event.
+ */
+$(() => {
+    // fit Canvas size to window size.
+    console.log($('.wrapper').width())
+    $("#canvas").attr('width', $('.wrapper').width())
+    $("#canvas").attr('height', $('.wrapper').height())
+
+    $(window).on('mousemove', (e) => {
+        if(dragging) {
+            $('#'+dragging).css('top', e.pageY)
+            $('#'+dragging).css('left', e.pageX)
+        }
+    })
+    $(window).on('mouseup', (e) => {
+        dragging = null
+        console.log('dragging end.')
+    })
+
+    // When Double Clicked, add a new component.
+    $(window).on('dblclick', (e) => {
+
+        inputted = window.prompt("追加する項目名を入力", "");
+        
+        if(!!inputted) {
+            let id = "obj" + Math.floor( Math.random() * 10000 )
+
+            let elem = $("<div id='"+id+"' class='floating-box'>"+inputted+"</div>")
+
+            $(elem).on('mousedown', (e) => {
+                dragging = $(elem).attr('id')
+                console.log(dragging + ' is dragging start.')
+            })
+            $(elem).css('top', e.pageY)
+            $(elem).css('left', e.pageX)
+
+            $('#floating-area').append(elem)
+        }
+    })
+
+    drawLines()
+});
+
+
+
+/**
+ * Drawing Background Line.
+ */
+function drawLines() {
+    let width = $('.wrapper').width()
+    let height = $('.wrapper').height()
+
+    let lineHeight = height / 5
+    
+    // Initialize Canvas
+    var cs = document.getElementById('canvas'),
+    ctx = cs.getContext('2d'),
+    csWidth  = cs.width,
+    csHeight = cs.height,
+    center   = {
+      x: csWidth / 2,
+      y: csHeight / 2
+    }
+
+    // Line Style
+    ctx.strokeStyle = '#666'
+    ctx.lineWidth = 4
+
+    const headers = ['目　的', 'ジョブ', '不　満', 'バリア', '解　決']
+
+    for(var i in [...Array(6).keys()]) {
+        ctx.beginPath()
+        ctx.moveTo(0, (lineHeight * i+2)-i)
+        ctx.lineTo(width, (lineHeight * i+2)-i)
+        ctx.closePath()
+        ctx.stroke()
+        ctx.font = "20px Sans Serif"
+        ctx.fillText(headers[i], 20, (lineHeight * i + lineHeight / 2))
+    }
+
+    // cell line.
+    ctx.beginPath()
+    ctx.moveTo(2, 2)
+    ctx.lineTo(2, height)
+    ctx.closePath()
+    ctx.stroke()
+
+    ctx.beginPath()
+    ctx.moveTo(100, 2)
+    ctx.lineTo(100, height)
+    ctx.closePath()
+    ctx.stroke()
+}
+
+</script>
+<div class="wrapper">
+    <canvas id="canvas"></canvas>
+</div>
+<div id="floating-area"></div>
+</body>
+</html>
