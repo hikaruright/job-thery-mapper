@@ -39,13 +39,17 @@ canvas {
     position: absolute;
     top:100px;
     left:100px;
+    min-width: 120px;
     max-width: 200px;
     height: auto;
     word-break: break-all;
     word-wrap: break-word;
     border: solid 2px gray;
     background-color: burlywood;
-    padding: 6px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 14px;
+    padding-right: 22px;
 
     cursor: pointer;
 	-webkit-user-select: none;
@@ -54,13 +58,32 @@ canvas {
 	        user-select: none;
 }
 
+.floating-box label.circle {
+    cursor: pointer;
+}
+.floating-box label.close {
+    cursor: pointer;
+    position: absolute;
+    top: 4px;
+    right: 8px;
+}
+
 </style>
 
 </head>
 <body>
 <script>
 
+/** Dragging target */
 var dragging = null;
+/** Drawing line from */
+var drawingLineFrom = null;
+/** Mouse Overed object */
+var mouseOvered = null;
+/** Display Object Components */
+var components = {}
+
+var diffX = 0, diffY = 0
 
 /**
  * On Loaded Event.
@@ -73,13 +96,47 @@ $(() => {
 
     $(window).on('mousemove', (e) => {
         if(dragging) {
-            $('#'+dragging).css('top', e.pageY)
-            $('#'+dragging).css('left', e.pageX)
+            $('#'+dragging).css('top', e.pageY + diffY)
+            $('#'+dragging).css('left', e.pageX + diffX)
         }
     })
     $(window).on('mouseup', (e) => {
         dragging = null
-        console.log('dragging end.')
+        // Has lining from and to
+        if(drawingLineFrom && mouseOvered) {
+            
+            var removeFromTarget = false
+            var remove = null
+
+            // search lines to each
+            components[mouseOvered].jointTo.forEach((v, i) => {
+                if (v === drawingLineFrom) {
+                    console.log('removeing. to ' + i)
+                    remove = i
+                }
+            })
+            components[drawingLineFrom].jointTo.forEach((v, i) => {
+                if (v === mouseOvered) {
+                    removeFromTarget = true
+                    remove = i
+                }
+            })
+
+            if(remove || remove === 0) {
+                if (removeFromTarget) {
+                    components[drawingLineFrom].jointTo.splice(remove)
+                } else {
+                    components[mouseOvered].jointTo.splice(remove)
+                }
+            } else{
+                components[mouseOvered].jointTo.push(drawingLineFrom)
+                console.log(components[mouseOvered].jointTo)
+            }
+        }
+        drawingLineFrom = null
+        mouseOvered = null
+
+        draw()
     })
 
     // When Double Clicked, add a new component.
@@ -88,17 +145,8 @@ $(() => {
         inputted = window.prompt("追加する項目名を入力", "");
         
         if(!!inputted) {
-            let id = "obj" + Math.floor( Math.random() * 10000 )
-
-            let elem = $("<div id='"+id+"' class='floating-box'>"+inputted+"</div>")
-
-            $(elem).on('mousedown', (e) => {
-                dragging = $(elem).attr('id')
-                console.log(dragging + ' is dragging start.')
-            })
-            $(elem).css('top', e.pageY)
-            $(elem).css('left', e.pageX)
-
+            const addObj = createAndAddComponent(inputted, e.pageX, e.pageY)
+            let elem = addObj.html()
             $('#floating-area').append(elem)
         }
     })
@@ -106,7 +154,113 @@ $(() => {
     drawLines()
 });
 
+// ------------------------------
+// Management Object Files
+// ------------------------------
 
+/**
+ * Component Jobs.
+ */
+class ComponentObject {
+    /**
+     * Constructor
+     */
+    constructor(id, name, x, y, jointTo) {
+        this.id = id || "obj" + Math.floor( Math.random() * 10000 )
+        this.name = name
+        this.position = {
+            x: x,
+            y: y
+        }
+        this.jointTo = jointTo || []
+    }
+
+    /**
+     * Creating HTML DOM Element
+     */
+    html() {
+        const elem = $("<div id='" + this.id + "' class='floating-box'>" + "</div>")
+
+        const circle = $("<label class='circle'>◎</label>")
+
+        circle.attr('title', '他要素にドラッグして線を引きます')
+
+        circle.on('mousedown', () => {
+            console.log('line drawing start, from ' + this.id)
+            drawingLineFrom = this.id
+        })
+
+        elem.append(circle)
+        elem.append($("<span></span>").text(this.name))
+        
+        const close = $("<label class='close'>×</label>")
+
+        close.on('click', () => {
+            if(window.confirm('削除しますか？')) {
+                delete components[this.id]
+                elem.remove()
+            }
+        })
+
+        elem.append(close)
+
+        elem.css('top', this.position.y)
+        elem.css('left', this.position.x)
+
+        // adding event
+        elem.on('mousedown', (e) => {
+            if(!drawingLineFrom) {
+                dragging = elem.attr('id')
+
+                var elemX = elem.offset().left
+                var elemY = elem.offset().top
+
+                diffX = elemX - e.pageX;
+                diffY = elemY - e.pageY;
+            }
+        })
+        elem.on('mouseover', () => {
+            mouseOvered = this.id
+        })
+        elem.on('mouseleave', () => {
+            mouseOvered = null
+        })
+        
+        return elem
+    }
+}
+
+/**
+ * Creating Object and add to managed list.
+ */
+function createAndAddComponent(name, x, y) {
+    const adding = new ComponentObject(null, name, x, y, null)
+    this.components[adding.id] = adding
+
+    return adding
+}
+
+//////////////////////////////////////////////////////////////////////
+// DRAWING TO CANVAS.
+//////////////////////////////////////////////////////////////////////
+
+function draw() {
+    const ctx = getCanvasCtx()
+    ctx.clearRect(0, 0, $("#canvas").width(), $("#canvas").height())
+
+    drawLines()
+    drawJoinLines()
+}
+
+/**
+ * get canvas context
+ */
+ function getCanvasCtx() {
+    var cs = document.getElementById('canvas'),
+    ctx = cs.getContext('2d')
+
+    return ctx
+}
 
 /**
  * Drawing Background Line.
@@ -116,16 +270,8 @@ function drawLines() {
     let height = $('.wrapper').height()
 
     let lineHeight = height / 5
-    
-    // Initialize Canvas
-    var cs = document.getElementById('canvas'),
-    ctx = cs.getContext('2d'),
-    csWidth  = cs.width,
-    csHeight = cs.height,
-    center   = {
-      x: csWidth / 2,
-      y: csHeight / 2
-    }
+
+    var ctx = getCanvasCtx()
 
     // Line Style
     ctx.strokeStyle = '#666'
@@ -159,10 +305,43 @@ function drawLines() {
     ctx.stroke()
 }
 
+
+/**
+ * Draw joining lines.
+ */
+function drawJoinLines() {
+
+    let ctx = getCanvasCtx()
+
+    Object.keys(components).forEach((key) => {
+        var target = components[key]
+        target.jointTo.forEach((id) => {
+            
+            var row = $("#" + key)
+
+            fromX = row.offset().left + row.width() / 2
+            fromY = row.offset().top + row.height() / 2
+            
+            if(components[id]) {
+                joining = $("#"+id)
+                toX = joining.offset().left + joining.width() / 2
+                toY = joining.offset().top + joining.height() / 2
+
+                // Drawing start.
+                ctx.beginPath()
+                ctx.moveTo(fromX, fromY)
+                ctx.lineTo(toX, toY)
+                ctx.stroke()
+            }
+        })
+    })
+}
+
 </script>
 <div class="wrapper">
     <canvas id="canvas"></canvas>
 </div>
-<div id="floating-area"></div>
+<div id="floating-area">
+</div>
 </body>
 </html>
