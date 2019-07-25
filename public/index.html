@@ -98,6 +98,8 @@ $(() => {
         if(dragging) {
             $('#'+dragging).css('top', e.pageY + diffY)
             $('#'+dragging).css('left', e.pageX + diffX)
+
+            draw()
         }
     })
     $(window).on('mouseup', (e) => {
