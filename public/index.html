@@ -6,7 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Map</title>
     <script type="text/javascript" src="./bower_components/jquery/dist/jquery.min.js"></script>
-
+    <script type="text/javascript" src="./bower_components/hammerjs/hammer.min.js"></script>
+    <script type="text/javascript" src="./bower_components/jquery-hammerjs/jquery.hammer.js"></script>
     <style>
 
 html, body {
@@ -142,12 +143,13 @@ $(() => {
     })
 
     // When Double Clicked, add a new component.
-    $(window).on('dblclick', (e) => {
+    $(window).hammer().on('doubletap', (e) => {
+        e.preventDefault()
 
         inputted = window.prompt("追加する項目名を入力", "");
         
         if(!!inputted) {
-            const addObj = createAndAddComponent(inputted, e.pageX, e.pageY)
+            const addObj = createAndAddComponent(inputted, e.gesture.center.x, e.gesture.center.y)
             let elem = addObj.html()
             $('#floating-area').append(elem)
         }
