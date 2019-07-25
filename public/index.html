@@ -12,6 +12,7 @@
 html, body {
     height: 100%;
     margin: 0;
+    overflow: hidden;
 }
 
 canvas {
@@ -142,7 +143,9 @@ function drawLines() {
         ctx.fillText(headers[i], 20, (lineHeight * i + lineHeight / 2))
     }
 
-    // cell line.
+    // ------------------------
+    // Drawing vertical Lines.
+    // ------------------------
     ctx.beginPath()
     ctx.moveTo(2, 2)
     ctx.lineTo(2, height)
