@@ -187,8 +187,8 @@ class ComponentObject {
 
         circle.attr('title', '他要素にドラッグして線を引きます')
 
-        circle.on('mousedown', () => {
-            console.log('line drawing start, from ' + this.id)
+        circle.on('touchstart mousedown', (e) => {
+            e.preventDefault()
             drawingLineFrom = this.id
         })
 
@@ -197,7 +197,8 @@ class ComponentObject {
         
         const close = $("<label class='close'>×</label>")
 
-        close.on('click', () => {
+        close.on('touched click', (e) => {
+            e.preventDefault()
             if(window.confirm('削除しますか？')) {
                 delete components[this.id]
                 elem.remove()
@@ -210,7 +211,8 @@ class ComponentObject {
         elem.css('left', this.position.x)
 
         // adding event
-        elem.on('mousedown', (e) => {
+        elem.on('touchstart mousedown', (e) => {
+            e.preventDefault()
             if(!drawingLineFrom) {
                 dragging = elem.attr('id')
 
@@ -221,10 +223,12 @@ class ComponentObject {
                 diffY = elemY - e.pageY;
             }
         })
-        elem.on('mouseover', () => {
+        elem.on('touchenter mouseenter', (e) => {
+            e.preventDefault()
             mouseOvered = this.id
         })
-        elem.on('mouseleave', () => {
+        elem.on('touchleave mouseleave', (e) => {
+            e.preventDefault()
             mouseOvered = null
         })
         
