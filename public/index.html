@@ -100,6 +100,10 @@ $(() => {
             $('#'+dragging).css('top', e.pageY + diffY)
             $('#'+dragging).css('left', e.pageX + diffX)
 
+            // change data
+            components[dragging].position.x = e.pageX + diffX
+            components[dragging].position.y = e.pageY + diffY
+
             draw()
         }
     })
@@ -156,6 +160,9 @@ $(() => {
     })
 
     drawLines()
+
+    // load data if needed.
+    load()
 });
 
 // ------------------------------
@@ -253,6 +260,9 @@ function createAndAddComponent(name, x, y) {
 //////////////////////////////////////////////////////////////////////
 
 function draw() {
+
+    save()
+
     const ctx = getCanvasCtx()
     ctx.clearRect(0, 0, $("#canvas").width(), $("#canvas").height())
 
@@ -343,6 +353,35 @@ function drawJoinLines() {
             }
         })
     })
+}
+
+//////////////////////////////////////////////////////////////////////
+// SAVE AND LOADING
+//////////////////////////////////////////////////////////////////////
+
+function save() {
+    localStorage.setItem('components', JSON.stringify(components))
+}
+
+function load() {
+    let _str = localStorage.getItem('components')
+
+    if(_str && window.confirm('保存されたデータがあります。ロードしますか？')) {
+        var jsonMap = JSON.parse(_str)
+
+        Object.keys(jsonMap).forEach((key) => {
+
+            var obj = jsonMap[key]
+            var component = new ComponentObject(obj.id, obj.name, obj.position.x, obj.position.y, obj.jointTo)
+
+            components[key] = component
+
+            var elem = components[key].html()
+            $('#floating-area').append(elem)
+        })
+
+        draw()
+    } 
 }
 
 </script>
