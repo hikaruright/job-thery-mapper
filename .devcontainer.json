@@ -1,0 +1,15 @@
+{
+    "name": "Job Theory mapping",
+    "dockerFile": "Dockerfile",
+    
+    "runArgs": [
+      
+    ],
+  
+    "appPort": [3000],
+
+    "settings": { 
+      "terminal.integrated.shell.linux": "/bin/bash"
+    },
+  
+}

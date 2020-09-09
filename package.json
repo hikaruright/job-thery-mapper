@@ -10,8 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bower": "^1.8.8",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "hammerjs": "^2.0.8",
+    "jquery-hammerjs": "^2.0.0"
   },
   "devDependencies": {
     "sass": "^1.22.7"
