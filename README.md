@@ -43,4 +43,3 @@ Click to '×' figure, on right side.
 
 - [x] Save and load locally (save map to localStorage)
 - [ ] Auto resize when window resizing
-- [ ] 
