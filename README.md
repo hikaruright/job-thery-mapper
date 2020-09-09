@@ -2,7 +2,7 @@
 
 We support your thinking.
 
-## What to use?
+## How to install
 
 ### Install required libraries
 
@@ -21,7 +21,7 @@ $ node index.js
 
 open http://localhost:3000 in your browser.
 
-### What to use
+### How to use
 
 #### Add element to the map
 
